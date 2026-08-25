@@ -1,51 +1,50 @@
-# Ejemplos basicos de SOLID
+# Ejemplos de SOLID en Java
 
-Este proyecto contiene ejemplos sencillos en Java sobre los cinco principios
-SOLID. Todos utilizan situaciones de una tienda para que sean faciles de
-relacionar durante una exposicion.
+Proyecto educativo con ejemplos ejecutables de los cinco principios SOLID.
+Cada principio incluye un caso incorrecto y una solución sencilla.
 
 ## Principios
 
-| Principio | Ejemplo | Idea principal |
+| Principio | Ejemplo | Qué se demuestra |
 | --- | --- | --- |
-| S - Responsabilidad unica | Pedido | Cada clase tiene una sola responsabilidad. |
-| O - Abierto/cerrado | Metodos de pago | Se pueden agregar formas de pago sin modificar las existentes. |
-| L - Sustitucion de Liskov | Empleados | Una subclase puede usarse donde se espera la clase padre. |
-| I - Segregacion de interfaces | Empleados y robots | Una clase no implementa metodos que no necesita. |
-| D - Inversion de dependencias | Notificaciones | Se depende de una interfaz y no de una clase concreta. |
+| S - Responsabilidad única | Pedido | El pedido, el cálculo y la persistencia tienen responsabilidades separadas. |
+| O - Abierto/cerrado | Métodos de pago | `ProcesadorPago` trabaja con nuevos medios mediante `MetodoPago`. |
+| L - Sustitución de Liskov | Empleados | Todos los tipos de empleado pueden sustituir a `Empleado`. |
+| I - Segregación de interfaces | Empleados y robots | Cada clase implementa solo las capacidades que necesita. |
+| D - Inversión de dependencias | Notificaciones | `PedidoService` depende de `Notificador`, no de un canal concreto. |
 
 ## Estructura
 
 ```text
 src/
-├── App.java
-└── solid/
-    ├── s/
-    ├── o/
-    ├── l/
-    ├── i/
-    └── d/
+└── main/java/     # Aplicación y ejemplos SOLID
 ```
 
-Cada carpeta contiene una clase `Main` independiente y ejecutable. También
-incluye `EjemploIncorrecto.java`, donde se muestra el problema antes de
-aplicar el principio.
+Los archivos `EjemploIncorrecto.java` muestran el problema antes de aplicar
+cada principio. Las clases `Main.java` muestran la solución.
 
-## Compilacion y ejecucion
+## Requisitos
 
-Desde la carpeta principal del proyecto:
+- JDK 11 o superior
+
+## Compilación
+
+Desde la carpeta del proyecto:
 
 ```bash
-javac --release 11 -d bin src/App.java src/solid/s/*.java src/solid/o/*.java src/solid/l/*.java src/solid/i/*.java src/solid/d/*.java
+javac --release 11 -d bin src/main/java/App.java src/main/java/solid/s/*.java src/main/java/solid/o/*.java src/main/java/solid/l/*.java src/main/java/solid/i/*.java src/main/java/solid/d/*.java
+```
+
+## Ejecución de demostraciones
+
+```bash
 java -cp bin solid.s.Main
 java -cp bin solid.o.Main
 java -cp bin solid.l.Main
 java -cp bin solid.i.Main
 java -cp bin solid.d.Main
-```
-
-Para ejecutar el resumen general:
-
-```bash
 java -cp bin App
 ```
+
+Los importes usan `BigDecimal` en el ejercicio de pedidos para evitar errores
+de precisión habituales al representar dinero con `double`.

@@ -1,5 +1,4 @@
 \documentclass[12pt,a4paper]{article}
-
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[spanish,es-nodecimaldot]{babel}
@@ -8,334 +7,140 @@
 \usepackage{listings}
 \usepackage{parskip}
 \usepackage{needspace}
-
 \geometry{margin=2.5cm}
-
 \definecolor{codigo}{RGB}{245,245,245}
 \definecolor{azul}{RGB}{30,70,130}
-
-\lstset{
-    language=Java,
-    backgroundcolor=\color{codigo},
-    basicstyle=\ttfamily\small,
-    keywordstyle=\color{azul}\bfseries,
-    commentstyle=\color{gray},
-    showstringspaces=false,
-    frame=single,
-    breaklines=true,
-    columns=fullflexible
-}
+\lstset{language=Java,backgroundcolor=\color{codigo},basicstyle=\ttfamily\small,
+keywordstyle=\color{azul}\bfseries,commentstyle=\color{gray},
+showstringspaces=false,frame=single,breaklines=true,columns=fullflexible}
 
 \title{Informe sobre los principios SOLID}
 \author{Jorman Noriega}
 \date{\today}
 
 \begin{document}
-
 \maketitle
 
 \begin{abstract}
-Este informe explica de forma sencilla los cinco principios SOLID de la
-programación orientada a objetos. Los ejemplos utilizan situaciones de una
-tienda para mostrar cómo escribir código más organizado y fácil de mantener.
+Este informe explica los cinco principios SOLID mediante ejemplos en Java.
+Cada ejemplo presenta el problema original y una solución basada en una
+abstracción sencilla.
 \end{abstract}
 
 \section{Introducción}
+SOLID reúne cinco principios para diseñar programas orientados a objetos más
+fáciles de mantener, extender y probar. No son reglas para crear más clases sin
+motivo: ayudan a separar responsabilidades y a controlar las dependencias.
 
-SOLID es un conjunto de cinco principios para diseñar programas orientados a
-objetos. Su objetivo es reducir la dependencia entre las clases, facilitar los
-cambios y evitar que el código se vuelva difícil de mantener.
-
-Las letras de SOLID representan los siguientes principios:
-
-\begin{itemize}
-    \item S: Single Responsibility Principle.
-    \item O: Open/Closed Principle.
-    \item L: Liskov Substitution Principle.
-    \item I: Interface Segregation Principle.
-    \item D: Dependency Inversion Principle.
-\end{itemize}
+El proyecto se compila directamente con Java 11. Los importes del ejercicio de
+pedidos se representan con \texttt{BigDecimal}, apropiado para valores
+monetarios.
 
 \section{S: Responsabilidad única}
-
 Una clase debe tener una sola responsabilidad y una sola razón para cambiar.
-Por ejemplo, una clase \texttt{Pedido} debería encargarse de los datos del
-pedido, pero no de calcular totales y guardarlos en una base de datos al mismo
-tiempo.
+En el ejemplo incorrecto, \texttt{PedidoIncorrecto} mezcla datos, cálculo y
+persistencia. La solución separa esas tareas: \texttt{Pedido} mantiene sus
+productos, \texttt{CalculadoraPedido} calcula el total y
+\texttt{PedidoRepository} se ocupa de guardar.
 
-\textbf{Ejemplo incorrecto:}
-
-\Needspace{12\baselineskip}
 \begin{lstlisting}
-class Pedido {
-    void agregarProducto() { }
-    void calcularTotal() { }
-    void guardarEnBaseDatos() { }
-}
+Pedido pedido = new Pedido();
+pedido.agregarProducto(new Producto("Cuaderno", new BigDecimal("10000")));
+BigDecimal total = new CalculadoraPedido().calcularTotal(pedido);
+new PedidoRepository().guardar(pedido);
 \end{lstlisting}
 
-La clase anterior mezcla tres responsabilidades diferentes.
-
-\textbf{Ejemplo correcto:}
-
-Una solución sencilla es separar las responsabilidades:
-
-\Needspace{18\baselineskip}
-\begin{lstlisting}
-class Pedido {
-    private double total;
-    public double getTotal() { return total; }
-}
-
-class CalculadoraPedido {
-    public double calcular(Pedido pedido) {
-        return pedido.getTotal();
-    }
-}
-
-class PedidoRepository {
-    public void guardar(Pedido pedido) {
-        System.out.println("Pedido guardado");
-    }
-}
-
-public class Main {
-    public static void main(String[] args) {
-        Pedido pedido = new Pedido();
-        CalculadoraPedido calculadora = new CalculadoraPedido();
-        System.out.println(calculadora.calcular(pedido));
-        new PedidoRepository().guardar(pedido);
-    }
-}
-\end{lstlisting}
-
-De esta forma, cada clase tiene una función clara. Si cambia la forma de
-guardar los pedidos, no es necesario modificar la clase \texttt{Pedido}.
+Si cambia la forma de guardar, no es necesario modificar el modelo del pedido.
 
 \section{O: Abierto/cerrado}
-
 Una clase debe estar abierta para extenderse, pero cerrada para modificarse.
-Esto significa que podemos agregar comportamientos nuevos sin cambiar el
-código que ya funciona.
+El ejemplo incorrecto usa una cadena y condicionales para decidir el tipo de
+pago. Cada nuevo método obliga a modificar la función.
 
-\textbf{Ejemplo incorrecto:}
+La solución define \texttt{MetodoPago} y hace que \texttt{ProcesadorPago}
+dependa de esa interfaz:
 
-\Needspace{12\baselineskip}
 \begin{lstlisting}
-void pagar(String tipo, double valor) {
-    if (tipo.equals("tarjeta")) { }
-    else if (tipo.equals("paypal")) { }
-    // Cada nuevo pago modifica esta funcion.
-}
-\end{lstlisting}
+public class ProcesadorPago {
+    private final MetodoPago metodoPago;
 
-\textbf{Ejemplo correcto:} se pueden agregar diferentes formas de pago
-mediante una interfaz:
-
-\Needspace{18\baselineskip}
-\begin{lstlisting}
-interface MetodoPago {
-    void pagar(double valor);
-}
-
-class TarjetaPago implements MetodoPago {
-    public void pagar(double valor) {
-        System.out.println("Pago con tarjeta");
+    public ProcesadorPago(MetodoPago metodoPago) {
+        this.metodoPago = metodoPago;
     }
-}
 
-class NequiPago implements MetodoPago {
-    public void pagar(double valor) {
-        System.out.println("Pago con Nequi");
-    }
-}
-
-public class Main {
-    public static void main(String[] args) {
-        MetodoPago pago = new NequiPago();
-        pago.pagar(25000);
+    public void procesar(double valor) {
+        metodoPago.pagar(valor);
     }
 }
 \end{lstlisting}
 
-Para agregar otro método, como PayPal, se crea una nueva clase sin modificar
-las clases anteriores.
+Se pueden añadir \texttt{TarjetaPago}, \texttt{PaypalPago}, \texttt{NequiPago}
+u otra implementación sin modificar el procesador.
 
 \section{L: Sustitución de Liskov}
+Una subclase debe poder utilizarse donde se espera su clase padre sin romper el
+contrato. En el ejemplo incorrecto, el empleado de medio tiempo lanza una
+excepción al calcular su salario.
 
-Una clase hija debe poder utilizarse en cualquier lugar donde se espere su
-clase padre sin causar errores ni comportamientos inesperados.
+En la solución, todos los tipos implementan la operación heredada de forma
+válida:
 
-\textbf{Ejemplo incorrecto:}
-
-\Needspace{16\baselineskip}
-\begin{lstlisting}
-class Empleado {
-    public double calcularSalario() { return 2000000; }
-}
-
-class EmpleadoMedioTiempo extends Empleado {
-    public double calcularSalario() {
-        throw new UnsupportedOperationException();
-    }
-}
-
-// Esta llamada provoca un error:
-mostrarSalario(new EmpleadoMedioTiempo());
-\end{lstlisting}
-
-El empleado de medio tiempo no puede sustituir a \texttt{Empleado}, porque
-rompe el comportamiento esperado. Esto viola LSP.
-
-\textbf{Ejemplo correcto:} los dos tipos de empleado pueden utilizarse como un
-\texttt{Empleado}:
-
-\Needspace{18\baselineskip}
 \begin{lstlisting}
 abstract class Empleado {
     public abstract double calcularSalario();
 }
 
-class EmpleadoTiempoCompleto extends Empleado {
-    public double calcularSalario() { return 2000000; }
-}
-
 class EmpleadoMedioTiempo extends Empleado {
     public double calcularSalario() { return 1000000; }
 }
-
-public class Main {
-    public static void main(String[] args) {
-        mostrarSalario(new EmpleadoTiempoCompleto());
-        mostrarSalario(new EmpleadoMedioTiempo());
-    }
-
-    static void mostrarSalario(Empleado empleado) {
-        System.out.println(empleado.calcularSalario());
-    }
-}
 \end{lstlisting}
 
-Una función que reciba un \texttt{Empleado} puede trabajar con cualquiera de
-las dos clases hijas sin conocer sus detalles.
+También se incluye \texttt{EmpleadoPorComision}. Una lista de
+\texttt{Empleado} puede contener los tres tipos y calcular sus salarios sin
+conocer sus detalles.
 
 \section{I: Segregación de interfaces}
+Una clase no debe estar obligada a implementar métodos que no necesita. La
+interfaz incorrecta \texttt{TrabajadorIncorrecto} obliga al robot a comer y
+descansar.
 
-Una clase no debe estar obligada a implementar métodos que no necesita. Para
-esto, es mejor tener varias interfaces pequeñas en lugar de una interfaz muy
-grande.
+La solución divide el contrato en \texttt{Trabajable}, \texttt{Comible} y
+\texttt{Descansable}. El empleado implementa las tres, mientras que el robot
+solo implementa \texttt{Trabajable}:
 
-\textbf{Ejemplo incorrecto:} una interfaz grande obliga al robot a implementar
-métodos que no puede usar.
-
-\Needspace{16\baselineskip}
 \begin{lstlisting}
-interface Trabajador {
-    void trabajar();
-    void comer();
-    void descansar();
-}
-
-class Robot implements Trabajador {
-    public void trabajar() { }
-    public void comer() { /* No aplica */ }
-    public void descansar() { /* No aplica */ }
-}
-\end{lstlisting}
-
-\textbf{Ejemplo correcto:} se divide la interfaz grande en interfaces pequeñas.
-
-\Needspace{18\baselineskip}
-\begin{lstlisting}
-interface Trabajable { void trabajar(); }
-interface Comible { void comer(); }
-interface Descansable { void descansar(); }
-
-class Empleado implements Trabajable, Comible, Descansable {
-    public void trabajar() { System.out.println("Empleado trabaja"); }
-    public void comer() { System.out.println("Empleado come"); }
-    public void descansar() { System.out.println("Empleado descansa"); }
-}
-
 class Robot implements Trabajable {
-    public void trabajar() { System.out.println("Robot trabaja"); }
-}
-
-public class Main {
-    public static void main(String[] args) {
-        new Empleado().comer();
-        new Robot().trabajar();
+    public void trabajar() {
+        System.out.println("El robot esta trabajando");
     }
 }
 \end{lstlisting}
 
-El robot solo implementa \texttt{Trabajable}; no depende de \texttt{Comible} ni
-de \texttt{Descansable}.
+El programa utiliza métodos que reciben únicamente la capacidad requerida,
+como el método \texttt{asignarTrabajo}. Esto evita que
+el robot no dependa de las otras interfaces.
 
 \section{D: Inversión de dependencias}
+Las clases de alto nivel deben depender de abstracciones, no de detalles
+concretos. En el ejemplo incorrecto, \texttt{PedidoService} crea directamente
+un \texttt{EmailNotificador}.
 
-Las clases principales deben depender de abstracciones, como interfaces, y no
-directamente de clases concretas.
+La solución recibe un \texttt{Notificador} por el constructor:
 
-\textbf{Ejemplo incorrecto:} el servicio depende directamente de una clase
-concreta.
-
-\Needspace{12\baselineskip}
 \begin{lstlisting}
-class PedidoService {
-    void confirmarPedido() {
-        new EmailNotificador().enviar("Pedido confirmado");
-    }
+public PedidoService(Notificador notificador) {
+    this.notificador = Objects.requireNonNull(
+        notificador, "El notificador es obligatorio");
 }
 \end{lstlisting}
 
-\textbf{Ejemplo correcto:} el servicio puede recibir cualquier tipo de
-notificador:
-
-\Needspace{18\baselineskip}
-\begin{lstlisting}
-interface Notificador {
-    void enviar(String mensaje);
-}
-
-class EmailNotificador implements Notificador {
-    public void enviar(String mensaje) {
-        System.out.println("Correo: " + mensaje);
-    }
-}
-
-class PedidoService {
-    private Notificador notificador;
-
-    public PedidoService(Notificador notificador) {
-        this.notificador = notificador;
-    }
-
-    public void confirmarPedido() {
-        notificador.enviar("Pedido confirmado");
-    }
-}
-
-public class Main {
-    public static void main(String[] args) {
-        Notificador notificador = new EmailNotificador();
-        PedidoService servicio = new PedidoService(notificador);
-        servicio.confirmarPedido();
-    }
-}
-\end{lstlisting}
-
-Así, \texttt{PedidoService} puede trabajar con un notificador por correo,
-WhatsApp u otro medio sin modificar su código.
+El mismo servicio funciona con correo, WhatsApp u otro canal sin modificar el
+servicio.
 
 \section{Conclusión}
-
-Los principios SOLID ayudan a construir programas más ordenados, flexibles y
-fáciles de probar. No es necesario aplicar soluciones complejas: separar
-responsabilidades, usar interfaces y evitar dependencias directas ya mejora
-considerablemente la calidad del código.
-
-En el proyecto de ejemplo, los cinco principios se aplican a diferentes
-partes de una tienda: pedidos, pagos, empleados, impresoras y notificaciones.
+Los cinco ejemplos muestran que SOLID mejora la mantenibilidad cuando se aplica
+a problemas concretos: separar el pedido de su cálculo, extender pagos mediante
+interfaces, respetar contratos de herencia, dividir interfaces grandes e
+inyectar dependencias.
 
 \end{document}
