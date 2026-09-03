@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Actividad de Diseño — Análisis de Código Java</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f1117;--surface:#181c27;--border:#252a38;--accent:#4f8ef7;--text:#dde2f0;--muted:#697085;--green:#3ecf8e;--radius:10px;--code:#0d1015}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;line-height:1.6;min-height:100vh}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:18px 32px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100}
+.logo{width:34px;height:34px;background:var(--accent);border-radius:8px;display:grid;place-items:center;font-weight:700;font-size:15px;color:#fff;flex-shrink:0}
+header h1{font-size:15px;font-weight:600}
+header p{font-size:12px;color:var(--muted);margin-top:1px}
+.layout{display:grid;grid-template-columns:200px 1fr;min-height:calc(100vh - 71px)}
+nav{background:var(--surface);border-right:1px solid var(--border);padding:22px 10px;display:flex;flex-direction:column;gap:4px}
+.nav-label{font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--muted);padding:0 8px;margin-bottom:6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:7px;cursor:pointer;border:none;background:transparent;width:100%;text-align:left;color:var(--muted);font-family:'Inter',sans-serif;font-size:13px;transition:background .14s,color .14s}
+.nav-item:hover{background:var(--border);color:var(--text)}
+.nav-item.active{background:rgba(79,142,247,.12);color:var(--accent)}
+.nav-num{width:24px;height:24px;border-radius:6px;background:var(--border);display:grid;place-items:center;font-size:11px;font-weight:600;flex-shrink:0;transition:background .14s}
+.nav-item.active .nav-num{background:var(--accent);color:#fff}
+main{padding:32px 40px;overflow-y:auto}
+.exercise{display:none}.exercise.visible{display:block}
+.ex-meta{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.ex-tag{font-size:11px;font-weight:600;color:var(--muted);background:var(--border);padding:3px 10px;border-radius:20px}
+.ex-title{font-size:21px;font-weight:600;margin-bottom:6px;line-height:1.25}
+.ex-sub{font-size:13px;color:var(--muted);margin-bottom:24px}
+.questions{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:24px}
+.q-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px}
+.questions ol{padding-left:18px;display:flex;flex-direction:column;gap:10px}
+.questions li{font-size:13px;line-height:1.5}
+.questions li code{background:rgba(79,142,247,.12);color:var(--accent);padding:1px 5px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11.5px}
+.code-wrap{background:var(--code);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.code-bar{display:flex;align-items:center;justify-content:space-between;padding:9px 16px;background:var(--surface);border-bottom:1px solid var(--border)}
+.code-bar span{font-size:12px;font-weight:500;color:var(--muted)}
+.copy-btn{background:var(--border);border:none;color:var(--text);font-size:11px;font-family:'Inter',sans-serif;padding:4px 10px;border-radius:5px;cursor:pointer;transition:background .14s}
+.copy-btn:hover{background:#2e3448}
+.copy-btn.ok{color:var(--green)}
+pre{margin:0;padding:20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.75;tab-size:4;white-space:pre}
+.kw{color:#bf6bfa}.cl{color:#4fc4f7}.st{color:#3ecf8e}.nm{color:#f7a94f}.cm{color:#4a5068;font-style:italic}.an{color:#f7634f}
+.foot{display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:20px;border-top:1px solid var(--border)}
+.foot-btn{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:8px 16px;border-radius:var(--radius);cursor:pointer;transition:border-color .14s,background .14s}
+.foot-btn:hover:not(:disabled){border-color:var(--accent);background:rgba(79,142,247,.07)}
+.foot-btn:disabled{opacity:.3;pointer-events:none}
+.foot-prog{font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">J</div>
+  <div>
+    <h1>Actividad de Diseño — Análisis de Código Java</h1>
+    <p>Lee cada ejercicio, identifica los problemas de diseño y propón cómo corregirlos</p>
+  </div>
+</header>
+<div class="layout">
+  <nav>
+    <div class="nav-label">Ejercicios</div>
+    <button class="nav-item active" onclick="show(1)"><span class="nav-num">1</span>Reportes</button>
+<button class="nav-item " onclick="show(2)"><span class="nav-num">2</span>Pagos</button>
+<button class="nav-item " onclick="show(3)"><span class="nav-num">3</span>Empleados</button>
+<button class="nav-item " onclick="show(4)"><span class="nav-num">4</span>Inventario</button>
+<button class="nav-item " onclick="show(5)"><span class="nav-num">5</span>Autenticación</button>
+
+  </nav>
+  <main>
+    
+    <section class="exercise visible" id="ex1">
+      <div class="ex-meta"><span class="ex-tag">Ejercicio 1</span></div>
+      <div class="ex-title">Sistema de reportes de una cadena de tiendas</div>
+      <div class="ex-sub">Java 17 &middot; Identifica los problemas de diseño y propón cómo corregirlos</div>
+      <div class="questions">
+        <div class="q-title">Preguntas de análisis</div>
+        <ol><li>La clase <code>ReporteVentas</code> contiene varios grupos de métodos. ¿Qué tipos de operaciones distintas realiza? Agrúpalos.</li><li>Si el cliente pide agregar exportación en formato XML o PDF, ¿qué método deberías modificar? ¿Qué otra funcionalidad de la clase corre riesgo de verse afectada?</li><li>Observa el método <code>generarReporte()</code>: ¿qué sucede si se le pasa el formato <code>"XML"</code>? ¿Es ese comportamiento correcto y seguro?</li><li>¿Cuántas razones distintas tendría esta clase para cambiar en el futuro? ¿Qué problemas de diseño detectas y cómo los resolverías?</li></ol>
+      </div>
+      <div class="code-wrap">
+        <div class="code-bar"><span>Ejercicio1.java</span><button class="copy-btn" onclick="cp(this,1)">Copiar</button></div>
+        <pre id="c1"></pre>
+      </div>
+      <div class="foot">
+        <button class="foot-btn" disabled>← Anterior</button>
+        <span class="foot-prog">1 de 5</span>
+        <button class="foot-btn" onclick="show(2)">Siguiente →</button>
+      </div>
+    </section>
+
+    <section class="exercise " id="ex2">
+      <div class="ex-meta"><span class="ex-tag">Ejercicio 2</span></div>
+      <div class="ex-title">Plataforma de pagos con múltiples métodos</div>
+      <div class="ex-sub">Java 17 &middot; Identifica los problemas de diseño y propón cómo corregirlos</div>
+      <div class="questions">
+        <div class="q-title">Preguntas de análisis</div>
+        <ol><li>Revisa la interfaz <code>MetodoPago</code> y todas sus implementaciones. ¿Qué métodos no tienen sentido para <code>BilleteraVirtual</code>? ¿Y para <code>TransferenciaBancaria</code>?</li><li>¿Qué señal concreta en el código indica que la interfaz está imponiendo más de lo que cada clase puede cumplir?</li><li>Analiza el método <code>mostrarNumerosTarjeta()</code>. Traza su ejecución con los tres métodos de pago. ¿Qué ocurre en tiempo de ejecución y por qué?</li><li>¿Qué problemas de diseño detectas en este código? ¿Cómo reorganizarías las interfaces y las clases para resolverlos?</li></ol>
+      </div>
+      <div class="code-wrap">
+        <div class="code-bar"><span>Ejercicio2.java</span><button class="copy-btn" onclick="cp(this,2)">Copiar</button></div>
+        <pre id="c2"></pre>
+      </div>
+      <div class="foot">
+        <button class="foot-btn" onclick="show(1)">← Anterior</button>
+        <span class="foot-prog">2 de 5</span>
+        <button class="foot-btn" onclick="show(3)">Siguiente →</button>
+      </div>
+    </section>
+
+    <section class="exercise " id="ex3">
+      <div class="ex-meta"><span class="ex-tag">Ejercicio 3</span></div>
+      <div class="ex-title">Sistema de gestión de empleados</div>
+      <div class="ex-sub">Java 17 &middot; Identifica los problemas de diseño y propón cómo corregirlos</div>
+      <div class="questions">
+        <div class="q-title">Preguntas de análisis</div>
+        <ol><li>Identifica cuántos bloques de responsabilidad distintos tiene la clase <code>GestorEmpleados</code>. Nómbralos.</li><li>Observa cómo <code>guardarEmpleado()</code> y <code>notificarDesprendimientoPago()</code> crean sus dependencias. ¿Qué problema surge si se quiere cambiar MySQL por PostgreSQL, o SMTP por una API de mensajería?</li><li>¿Sería posible escribir pruebas unitarias para <code>GestorEmpleados</code> sin conectarse a una base de datos real ni enviar correos reales? ¿Por qué?</li><li>¿Qué problemas de diseño detectas y cómo reorganizarías el código para resolverlos?</li></ol>
+      </div>
+      <div class="code-wrap">
+        <div class="code-bar"><span>Ejercicio3.java</span><button class="copy-btn" onclick="cp(this,3)">Copiar</button></div>
+        <pre id="c3"></pre>
+      </div>
+      <div class="foot">
+        <button class="foot-btn" onclick="show(2)">← Anterior</button>
+        <span class="foot-prog">3 de 5</span>
+        <button class="foot-btn" onclick="show(4)">Siguiente →</button>
+      </div>
+    </section>
+
+    <section class="exercise " id="ex4">
+      <div class="ex-meta"><span class="ex-tag">Ejercicio 4</span></div>
+      <div class="ex-title">Sistema de inventario de una tienda</div>
+      <div class="ex-sub">Java 17 &middot; Identifica los problemas de diseño y propón cómo corregirlos</div>
+      <div class="questions">
+        <div class="q-title">Preguntas de análisis</div>
+        <ol><li>Sigue la ejecución de <code>calcularIngresosEsperados()</code> con los cuatro productos. ¿El cálculo del total es correcto para todos ellos? Justifica tu respuesta.</li><li>La clase base <code>Producto</code> establece dos contratos con sus métodos <code>vender()</code> y <code>precioConImpuesto()</code>. ¿Los respetan <code>ProductoDigital</code> y <code>ProductoPerecible</code>? Analiza cada caso.</li><li>Observa el método <code>imprimirInforme()</code>. ¿Qué patrón de código aparece ahí que indica un problema en la jerarquía de clases? ¿Qué consecuencia tendría agregar un nuevo tipo de producto?</li><li>¿Qué problemas de diseño detectas y cómo reorganizarías la jerarquía para corregirlos?</li></ol>
+      </div>
+      <div class="code-wrap">
+        <div class="code-bar"><span>Ejercicio4.java</span><button class="copy-btn" onclick="cp(this,4)">Copiar</button></div>
+        <pre id="c4"></pre>
+      </div>
+      <div class="foot">
+        <button class="foot-btn" onclick="show(3)">← Anterior</button>
+        <span class="foot-prog">4 de 5</span>
+        <button class="foot-btn" onclick="show(5)">Siguiente →</button>
+      </div>
+    </section>
+
+    <section class="exercise " id="ex5">
+      <div class="ex-meta"><span class="ex-tag">Ejercicio 5</span></div>
+      <div class="ex-title">Sistema de autenticación de una aplicación web</div>
+      <div class="ex-sub">Java 17 &middot; Identifica los problemas de diseño y propón cómo corregirlos</div>
+      <div class="questions">
+        <div class="q-title">Preguntas de análisis</div>
+        <ol><li>Enumera todas las tareas que realiza el método <code>autenticar()</code>. ¿Cuántas responsabilidades distintas concentra?</li><li>Para agregar un nuevo método de autenticación como <code>OAUTH</code> o <code>LDAP</code>, ¿qué parte del código deberías modificar? ¿Qué riesgo implica eso?</li><li>Observa cómo se crean <code>EmailDirecto</code> y <code>ArchivoLog</code> dentro de <code>ServicioAutenticacion</code>. ¿Qué problema surge si se quiere cambiar el mecanismo de notificación o de registro en pruebas?</li><li>¿Qué problemas de diseño detectas en este código y cómo lo reorganizarías para corregirlos?</li></ol>
+      </div>
+      <div class="code-wrap">
+        <div class="code-bar"><span>Ejercicio5.java</span><button class="copy-btn" onclick="cp(this,5)">Copiar</button></div>
+        <pre id="c5"></pre>
+      </div>
+      <div class="foot">
+        <button class="foot-btn" onclick="show(4)">← Anterior</button>
+        <span class="foot-prog">5 de 5</span>
+        <button class="foot-btn" disabled>Finalizar ✓</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+<script>
+const codes = {};
+  codes[1] = `import java.util.List;
+
+// ============================================================
+//  EJERCICIO 1
+//  Contexto: sistema de reportes de una cadena de tiendas
+//
+//  Analiza el código, identifica qué problemas de diseño
+//  presenta y explica cómo los corregirías.
+// ============================================================
+
+public class Ejercicio1 {
+
+    static class Venta {
+        String producto;
+        String categoria;
+        double monto;
+        String vendedor;
+
+        Venta(String producto, String categoria, double monto, String vendedor) {
+            this.producto  = producto;
+            this.categoria = categoria;
+            this.monto     = monto;
+            this.vendedor  = vendedor;
+        }
+    }
+
+    static class ReporteVentas {
+
+        private List<Venta> ventas;
+
+        ReporteVentas(List<Venta> ventas) {
+            this.ventas = ventas;
+        }
+
+        // --- Cálculos de negocio ---
+
+        double calcularTotal() {
+            double total = 0;
+            for (Venta v : ventas) total += v.monto;
+            return total;
+        }
+
+        double calcularPromedio() {
+            if (ventas.isEmpty()) return 0;
+            return calcularTotal() / ventas.size();
+        }
+
+        Venta obtenerMayorVenta() {
+            Venta mayor = ventas.get(0);
+            for (Venta v : ventas) {
+                if (v.monto > mayor.monto) mayor = v;
+            }
+            return mayor;
+        }
+
+        // --- Generación de reporte según formato ---
+        //
+        // Para agregar un nuevo formato (JSON, PDF, Excel) hay que
+        // modificar este método y agregar más else-if.
+
+        String generarReporte(String formato) {
+            StringBuilder sb = new StringBuilder();
+
+            if (formato.equals("TEXTO")) {
+                sb.append("====== REPORTE DE VENTAS ======\\n");
+                for (Venta v : ventas) {
+                    sb.append(v.vendedor).append(" | ")
+                      .append(v.producto).append(" | $")
+                      .append(v.monto).append("\\n");
+                }
+                sb.append("Total: $").append(calcularTotal()).append("\\n");
+                sb.append("Promedio: $").append(calcularPromedio()).append("\\n");
+
+            } else if (formato.equals("CSV")) {
+                sb.append("vendedor,producto,categoria,monto\\n");
+                for (Venta v : ventas) {
+                    sb.append(v.vendedor).append(",")
+                      .append(v.producto).append(",")
+                      .append(v.categoria).append(",")
+                      .append(v.monto).append("\\n");
+                }
+
+            } else if (formato.equals("HTML")) {
+                sb.append("<table>\\n<tr><th>Vendedor</th><th>Producto</th><th>Monto</th></tr>\\n");
+                for (Venta v : ventas) {
+                    sb.append("<tr><td>").append(v.vendedor).append("</td>")
+                      .append("<td>").append(v.producto).append("</td>")
+                      .append("<td>$").append(v.monto).append("</td></tr>\\n");
+                }
+                sb.append("</table>\\n");
+            }
+
+            // Si llega un formato desconocido, retorna cadena vacía sin avisar
+            return sb.toString();
+        }
+
+        // --- Persistencia mezclada con lógica de negocio ---
+
+        void guardarReporte(String formato) {
+            String contenido = generarReporte(formato);
+            // Simulación de escritura en disco
+            System.out.println("[Disco] Guardando reporte." + formato.toLowerCase());
+            System.out.println(contenido);
+        }
+
+        // --- Envío mezclado con lógica de negocio ---
+
+        void enviarPorEmail(String destinatario, String formato) {
+            String contenido = generarReporte(formato);
+            System.out.println("[SMTP] Para: " + destinatario);
+            System.out.println("[SMTP] Adjunto: reporte." + formato.toLowerCase());
+            System.out.println(contenido);
+        }
+    }
+
+    public static void main(String[] args) {
+        List<Venta> ventas = List.of(
+            new Venta("Laptop",   "Tecnologia", 3500000, "Carlos"),
+            new Venta("Silla",    "Muebles",     450000, "Maria"),
+            new Venta("Telefono", "Tecnologia", 1200000, "Carlos"),
+            new Venta("Escritorio","Muebles",    800000, "Ana")
+        );
+
+        ReporteVentas reporte = new ReporteVentas(ventas);
+
+        reporte.guardarReporte("TEXTO");
+        reporte.guardarReporte("CSV");
+        reporte.enviarPorEmail("gerencia@empresa.com", "HTML");
+
+        // Formato no contemplado: falla silenciosamente
+        reporte.guardarReporte("XML");
+    }
+}
+`;
+  codes[2] = `import java.util.List;
+
+// ============================================================
+//  EJERCICIO 2
+//  Contexto: plataforma de pagos con múltiples métodos
+//
+//  Analiza el código, identifica qué problemas de diseño
+//  presenta y explica cómo los corregirías.
+// ============================================================
+
+public class Ejercicio2 {
+
+    // Interfaz que pretende cubrir todos los métodos de pago posibles
+    interface MetodoPago {
+        void procesarPago(double monto);
+        void reembolsar(double monto);
+        void aplicarCuotas(int numeroCuotas);
+        void verificarSaldo();
+        String obtenerNumeroTarjeta();
+    }
+
+    // --- Tarjeta de crédito: soporta todo ---
+
+    static class TarjetaCredito implements MetodoPago {
+        private String numero;
+        private double limite;
+        private double saldoUsado;
+
+        TarjetaCredito(String numero, double limite) {
+            this.numero     = numero;
+            this.limite     = limite;
+            this.saldoUsado = 0;
+        }
+
+        @Override
+        public void procesarPago(double monto) {
+            if (saldoUsado + monto > limite) {
+                System.out.println("[TC] Cupo insuficiente.");
+                return;
+            }
+            saldoUsado += monto;
+            System.out.printf("[TC] Pago de $%.2f procesado. Cupo disponible: $%.2f%n",
+                    monto, limite - saldoUsado);
+        }
+
+        @Override
+        public void reembolsar(double monto) {
+            saldoUsado = Math.max(0, saldoUsado - monto);
+            System.out.printf("[TC] Reembolso de $%.2f aplicado.%n", monto);
+        }
+
+        @Override
+        public void aplicarCuotas(int numeroCuotas) {
+            System.out.println("[TC] Pago diferido en " + numeroCuotas + " cuotas.");
+        }
+
+        @Override
+        public void verificarSaldo() {
+            System.out.printf("[TC] Saldo usado: $%.2f / Limite: $%.2f%n", saldoUsado, limite);
+        }
+
+        @Override
+        public String obtenerNumeroTarjeta() {
+            return numero;
+        }
+    }
+
+    // --- Billetera virtual: no tiene tarjeta ni cuotas ---
+
+    static class BilleteraVirtual implements MetodoPago {
+        private String usuario;
+        private double saldo;
+
+        BilleteraVirtual(String usuario, double saldo) {
+            this.usuario = usuario;
+            this.saldo   = saldo;
+        }
+
+        @Override
+        public void procesarPago(double monto) {
+            if (monto > saldo) {
+                System.out.println("[BV] Saldo insuficiente.");
+                return;
+            }
+            saldo -= monto;
+            System.out.printf("[BV] Pago de $%.2f procesado. Saldo restante: $%.2f%n", monto, saldo);
+        }
+
+        @Override
+        public void reembolsar(double monto) {
+            saldo += monto;
+            System.out.printf("[BV] Reembolso de $%.2f acreditado.%n", monto);
+        }
+
+        // La billetera no maneja cuotas, pero la interfaz lo exige
+        @Override
+        public void aplicarCuotas(int numeroCuotas) {
+            throw new UnsupportedOperationException(
+                    "BilleteraVirtual no soporta pagos en cuotas.");
+        }
+
+        @Override
+        public void verificarSaldo() {
+            System.out.printf("[BV] Saldo disponible: $%.2f%n", saldo);
+        }
+
+        // La billetera no tiene número de tarjeta, pero la interfaz lo exige
+        @Override
+        public String obtenerNumeroTarjeta() {
+            return null; // no aplica — posible NullPointerException en el cliente
+        }
+    }
+
+    // --- Transferencia bancaria: no reembolsa automáticamente ni tiene cuotas ---
+
+    static class TransferenciaBancaria implements MetodoPago {
+        private String cuentaOrigen;
+        private double saldoCuenta;
+
+        TransferenciaBancaria(String cuentaOrigen, double saldoCuenta) {
+            this.cuentaOrigen = cuentaOrigen;
+            this.saldoCuenta  = saldoCuenta;
+        }
+
+        @Override
+        public void procesarPago(double monto) {
+            if (monto > saldoCuenta) {
+                System.out.println("[TB] Fondos insuficientes.");
+                return;
+            }
+            saldoCuenta -= monto;
+            System.out.printf("[TB] Transferencia de $%.2f desde %s. Saldo: $%.2f%n",
+                    monto, cuentaOrigen, saldoCuenta);
+        }
+
+        // El banco requiere proceso manual de varios días
+        @Override
+        public void reembolsar(double monto) {
+            throw new UnsupportedOperationException(
+                    "TransferenciaBancaria: el reembolso requiere gestión manual.");
+        }
+
+        @Override
+        public void aplicarCuotas(int numeroCuotas) {
+            throw new UnsupportedOperationException(
+                    "TransferenciaBancaria no soporta cuotas.");
+        }
+
+        @Override
+        public void verificarSaldo() {
+            System.out.printf("[TB] Saldo en cuenta %s: $%.2f%n", cuentaOrigen, saldoCuenta);
+        }
+
+        @Override
+        public String obtenerNumeroTarjeta() {
+            return null; // no aplica
+        }
+    }
+
+    // --- Servicio de pagos que usa la interfaz ---
+
+    static class ServicioPagos {
+
+        // Intenta cobrar a todos los métodos en cuotas
+        void cobrarEnCuotas(List<MetodoPago> metodos, double monto, int cuotas) {
+            for (MetodoPago mp : metodos) {
+                try {
+                    mp.aplicarCuotas(cuotas);
+                    mp.procesarPago(monto);
+                } catch (UnsupportedOperationException e) {
+                    System.out.println("Error: " + e.getMessage());
+                }
+            }
+        }
+
+        // Imprime el número de tarjeta de todos los métodos — puede retornar null
+        void mostrarNumerosTarjeta(List<MetodoPago> metodos) {
+            for (MetodoPago mp : metodos) {
+                // obtenerNumeroTarjeta() retorna null para billetera y transferencia
+                System.out.println("Tarjeta: " + mp.obtenerNumeroTarjeta().trim());
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        TarjetaCredito     tc  = new TarjetaCredito("4111-1111-1111-1111", 5000000);
+        BilleteraVirtual   bv  = new BilleteraVirtual("usuario@app.com", 800000);
+        TransferenciaBancaria tb = new TransferenciaBancaria("001-445-2231", 3000000);
+
+        ServicioPagos servicio = new ServicioPagos();
+
+        System.out.println("=== Procesar pagos individuales ===");
+        tc.procesarPago(1200000);
+        bv.procesarPago(300000);
+        tb.procesarPago(900000);
+
+        System.out.println("\\n=== Cobrar en cuotas (3 métodos) ===");
+        servicio.cobrarEnCuotas(List.of(tc, bv, tb), 500000, 3);
+
+        System.out.println("\\n=== Mostrar numeros de tarjeta ===");
+        try {
+            servicio.mostrarNumerosTarjeta(List.of(tc, bv, tb));
+        } catch (NullPointerException e) {
+            System.out.println("Error inesperado: " + e);
+        }
+    }
+}
+`;
+  codes[3] = `import java.util.ArrayList;
+import java.util.List;
+
+// ============================================================
+//  EJERCICIO 3
+//  Contexto: sistema de gestión de empleados de una empresa
+//
+//  Analiza el código, identifica qué problemas de diseño
+//  presenta y explica cómo los corregirías.
+// ============================================================
+
+public class Ejercicio3 {
+
+    static class Empleado {
+        String nombre;
+        String cargo;
+        double salarioBase;
+        String email;
+
+        Empleado(String nombre, String cargo, double salarioBase, String email) {
+            this.nombre      = nombre;
+            this.cargo       = cargo;
+            this.salarioBase = salarioBase;
+            this.email       = email;
+        }
+    }
+
+    // Esta clase acumula múltiples responsabilidades y fabrica
+    // sus propias dependencias internas sin posibilidad de cambiarlas.
+
+    static class GestorEmpleados {
+
+        private List<Empleado> empleados = new ArrayList<>();
+
+        // --- Responsabilidad 1: administración de la lista ---
+
+        void agregar(Empleado e) {
+            empleados.add(e);
+            System.out.println("Empleado agregado: " + e.nombre);
+        }
+
+        List<Empleado> listarTodos() {
+            return empleados;
+        }
+
+        // --- Responsabilidad 2: cálculo de nómina ---
+
+        double calcularSalarioNeto(Empleado e) {
+            double descuentoSalud      = e.salarioBase * 0.04;
+            double descuentoPension    = e.salarioBase * 0.04;
+            double descuentoSindical   = e.salarioBase * 0.01;
+            return e.salarioBase - descuentoSalud - descuentoPension - descuentoSindical;
+        }
+
+        void imprimirNomina() {
+            System.out.println("\\n--- NOMINA DEL MES ---");
+            for (Empleado e : empleados) {
+                System.out.printf("%-15s | Bruto: $%10.2f | Neto: $%10.2f%n",
+                        e.nombre, e.salarioBase, calcularSalarioNeto(e));
+            }
+        }
+
+        // --- Responsabilidad 3: persistencia (acoplada a MySQL) ---
+        //
+        // Si se cambia la base de datos, hay que modificar esta clase.
+        // Además es imposible probar GestorEmpleados sin una BD real.
+
+        void guardarEmpleado(Empleado e) {
+            // Dependencia concreta instanciada aquí mismo — no hay forma de reemplazarla
+            MySQLConector db = new MySQLConector();
+            db.conectar();
+            db.ejecutar("INSERT INTO empleados (nombre, cargo, salario) VALUES ('"
+                    + e.nombre + "', '" + e.cargo + "', " + e.salarioBase + ")");
+            db.desconectar();
+        }
+
+        void cargarEmpleados() {
+            MySQLConector db = new MySQLConector();
+            db.conectar();
+            db.ejecutar("SELECT * FROM empleados");
+            // Simulación: en la vida real aquí se mapearían los resultados
+            System.out.println("[BD] Empleados cargados desde MySQL.");
+            db.desconectar();
+        }
+
+        // --- Responsabilidad 4: notificaciones (acoplada a SMTP) ---
+        //
+        // Si se cambia el proveedor de correo, hay que modificar esta clase.
+
+        void notificarDesprendimientoPago(Empleado e) {
+            ServidorSMTP smtp = new ServidorSMTP();
+            smtp.conectar("smtp.empresa.com", 587);
+            smtp.enviar(
+                e.email,
+                "Desprendimiento de nomina",
+                "Hola " + e.nombre + ", tu pago neto es $" + calcularSalarioNeto(e)
+            );
+            smtp.desconectar();
+        }
+    }
+
+    // --- Clases de infraestructura concretas ---
+
+    static class MySQLConector {
+        void conectar() {
+            System.out.println("[MySQL] Conectando a jdbc:mysql://localhost:3306/rrhh");
+        }
+        void ejecutar(String sql) {
+            System.out.println("[MySQL] " + sql);
+        }
+        void desconectar() {
+            System.out.println("[MySQL] Conexion cerrada.");
+        }
+    }
+
+    static class ServidorSMTP {
+        void conectar(String host, int puerto) {
+            System.out.println("[SMTP] Conectando a " + host + ":" + puerto);
+        }
+        void enviar(String destino, String asunto, String cuerpo) {
+            System.out.println("[SMTP] Para: " + destino);
+            System.out.println("[SMTP] Asunto: " + asunto);
+            System.out.println("[SMTP] Cuerpo: " + cuerpo);
+        }
+        void desconectar() {
+            System.out.println("[SMTP] Sesion cerrada.");
+        }
+    }
+
+    public static void main(String[] args) {
+        GestorEmpleados gestor = new GestorEmpleados();
+
+        Empleado e1 = new Empleado("Laura Gomez",  "Desarrolladora", 4500000, "laura@empresa.com");
+        Empleado e2 = new Empleado("Pedro Vargas", "Disenador",      3200000, "pedro@empresa.com");
+        Empleado e3 = new Empleado("Ana Rios",     "Analista",       3800000, "ana@empresa.com");
+
+        gestor.agregar(e1);
+        gestor.agregar(e2);
+        gestor.agregar(e3);
+
+        gestor.imprimirNomina();
+
+        System.out.println();
+        gestor.guardarEmpleado(e1);
+
+        System.out.println();
+        gestor.notificarDesprendimientoPago(e1);
+    }
+}
+`;
+  codes[4] = `import java.util.List;
+
+// ============================================================
+//  EJERCICIO 4
+//  Contexto: sistema de inventario de una tienda
+//
+//  Analiza el código, identifica qué problemas de diseño
+//  presenta y explica cómo los corregirías.
+// ============================================================
+
+public class Ejercicio4 {
+
+    // Clase base para todo tipo de producto
+    static class Producto {
+        protected String nombre;
+        protected int    stock;
+        protected double precio;
+
+        Producto(String nombre, int stock, double precio) {
+            this.nombre = nombre;
+            this.stock  = stock;
+            this.precio = precio;
+        }
+
+        // Contrato: descuenta unidades del stock si hay disponibilidad
+        void vender(int unidades) {
+            if (unidades > stock) {
+                System.out.println("[" + nombre + "] Stock insuficiente.");
+                return;
+            }
+            stock -= unidades;
+            System.out.printf("[%s] Venta de %d unidad(es). Stock restante: %d%n",
+                    nombre, unidades, stock);
+        }
+
+        // Contrato: devuelve el precio con el impuesto incluido
+        double precioConImpuesto() {
+            return precio * 1.19;
+        }
+
+        int getStock()       { return stock;  }
+        String getNombre()   { return nombre; }
+        double getPrecio()   { return precio; }
+    }
+
+    // --- Producto digital: no tiene stock físico ---
+
+    static class ProductoDigital extends Producto {
+
+        ProductoDigital(String nombre, double precio) {
+            super(nombre, Integer.MAX_VALUE, precio); // stock "infinito"
+        }
+
+        // Sobreescribe vender() cambiando silenciosamente el contrato:
+        // nunca agota stock. El cliente no sabe si vendió o no.
+        @Override
+        void vender(int unidades) {
+            System.out.printf("[%s] Licencia digital entregada x%d (sin afectar stock).%n",
+                    nombre, unidades);
+        }
+
+        // Los productos digitales están exentos de IVA,
+        // pero el contrato de la clase base siempre aplica 19%.
+        @Override
+        double precioConImpuesto() {
+            return precio; // sin IVA — rompe la expectativa del 19%
+        }
+    }
+
+    // --- Producto perecedero: vencimiento afecta venta ---
+
+    static class ProductoPerecible extends Producto {
+        private boolean vencido;
+
+        ProductoPerecible(String nombre, int stock, double precio, boolean vencido) {
+            super(nombre, stock, precio);
+            this.vencido = vencido;
+        }
+
+        // Sobreescribe vender() lanzando una excepción que la clase base no declara
+        @Override
+        void vender(int unidades) {
+            if (vencido) {
+                throw new IllegalStateException(
+                        "[" + nombre + "] Producto vencido: no se puede vender.");
+            }
+            super.vender(unidades);
+        }
+    }
+
+    // --- Calculadora de ingresos ---
+
+    static class CalculadoraIngresos {
+
+        // Calcula ingresos totales de una lista de productos.
+        // Asume el contrato de Producto: vender() descuenta stock
+        // y precioConImpuesto() incluye siempre el 19%.
+        double calcularIngresosEsperados(List<Producto> productos, int unidadesPorProducto) {
+            double total = 0;
+            for (Producto p : productos) {
+                try {
+                    p.vender(unidadesPorProducto);
+                    // Asume que el precio con impuesto siempre lleva IVA
+                    total += p.precioConImpuesto() * unidadesPorProducto;
+                } catch (IllegalStateException e) {
+                    System.out.println("Venta omitida: " + e.getMessage());
+                }
+            }
+            return total;
+        }
+
+        // Para generar el informe, la lógica debe saber el tipo real —
+        // señal de que la jerarquía no está bien diseñada.
+        void imprimirInforme(List<Producto> productos) {
+            System.out.println("\\n--- INFORME DE INVENTARIO ---");
+            for (Producto p : productos) {
+
+                String tipo;
+                if (p instanceof ProductoDigital) {
+                    tipo = "Digital";
+                } else if (p instanceof ProductoPerecible) {
+                    tipo = "Perecible";
+                } else {
+                    tipo = "Estandar";
+                }
+
+                System.out.printf("%-20s | Tipo: %-10s | Stock: %6s | Precio+IVA: $%.2f%n",
+                        p.getNombre(), tipo,
+                        p.getStock() == Integer.MAX_VALUE ? "ilimitado" : String.valueOf(p.getStock()),
+                        p.precioConImpuesto());
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        Producto estandar  = new Producto("Cuaderno",        100, 5000);
+        Producto digital   = new ProductoDigital("Curso Java", 120000);
+        Producto perecible = new ProductoPerecible("Yogur", 40, 3500, false);
+        Producto vencido   = new ProductoPerecible("Leche", 20, 2800, true);
+
+        List<Producto> inventario = List.of(estandar, digital, perecible, vencido);
+
+        CalculadoraIngresos calc = new CalculadoraIngresos();
+
+        System.out.println("=== Calcular ingresos (5 unidades por producto) ===");
+        double total = calc.calcularIngresosEsperados(inventario, 5);
+        System.out.printf("%nIngresos totales: $%.2f%n", total);
+
+        calc.imprimirInforme(inventario);
+    }
+}
+`;
+  codes[5] = `import java.util.HashMap;
+import java.util.Map;
+
+// ============================================================
+//  EJERCICIO 5
+//  Contexto: sistema de autenticacion de una aplicacion web
+//
+//  Analiza el código, identifica qué problemas de diseño
+//  presenta y explica cómo los corregirías.
+// ============================================================
+
+public class Ejercicio5 {
+
+    // Simula una base de datos en memoria
+    static class BaseDatos {
+        private static final Map<String, String> usuarios = new HashMap<>();
+        static {
+            usuarios.put("admin",  "1234");
+            usuarios.put("laura",  "abcd");
+            usuarios.put("carlos", "xyz9");
+        }
+        static String obtenerPassword(String usuario) {
+            return usuarios.get(usuario);
+        }
+        static boolean existeUsuario(String usuario) {
+            return usuarios.containsKey(usuario);
+        }
+    }
+
+    // Esta clase concentra autenticación, validaciones, auditoría,
+    // notificaciones y control de acceso, además de instanciar
+    // sus propios mecanismos de notificación y registro.
+
+    static class ServicioAutenticacion {
+
+        private int maxIntentos = 3;
+        private Map<String, Integer> intentosFallidos = new HashMap<>();
+
+        // Punto de entrada principal para login
+        boolean autenticar(String usuario, String password, String metodo) {
+
+            // --- Validaciones básicas ---
+
+            if (usuario == null || usuario.isBlank()) {
+                System.out.println("[AUTH] Error: usuario vacío.");
+                return false;
+            }
+            if (password == null || password.length() < 4) {
+                System.out.println("[AUTH] Error: contraseña demasiado corta.");
+                return false;
+            }
+
+            // --- Control de intentos fallidos ---
+
+            int intentos = intentosFallidos.getOrDefault(usuario, 0);
+            if (intentos >= maxIntentos) {
+                System.out.println("[AUTH] Cuenta bloqueada: " + usuario);
+                // Notificación acoplada directamente — no se puede cambiar
+                EmailDirecto correo = new EmailDirecto();
+                correo.enviar("seguridad@empresa.com",
+                        "Cuenta bloqueada: " + usuario,
+                        "Se bloqueó la cuenta tras " + maxIntentos + " intentos fallidos.");
+                return false;
+            }
+
+            // --- Lógica de autenticación según método ---
+            //
+            // Para agregar OAuth, LDAP u otro método hay que modificar este bloque.
+
+            boolean exito = false;
+
+            if (metodo.equals("LOCAL")) {
+                if (!BaseDatos.existeUsuario(usuario)) {
+                    System.out.println("[AUTH] Usuario no encontrado: " + usuario);
+                    return false;
+                }
+                String passwordReal = BaseDatos.obtenerPassword(usuario);
+                exito = passwordReal != null && passwordReal.equals(password);
+
+            } else if (metodo.equals("TOKEN")) {
+                // Simulación de validación por token JWT
+                exito = password.startsWith("eyJ") && password.length() > 20;
+                System.out.println("[AUTH] Validando token JWT...");
+
+            } else if (metodo.equals("PIN")) {
+                // Autenticación por PIN numérico de 6 dígitos
+                exito = password.matches("\\\\d{6}");
+                System.out.println("[AUTH] Validando PIN...");
+            }
+
+            // --- Registro de auditoría acoplado ---
+            //
+            // Si se cambia el mecanismo de log, hay que modificar este método.
+
+            ArchivoLog log = new ArchivoLog();
+            if (exito) {
+                intentosFallidos.remove(usuario);
+                log.escribir("INFO",  "Login exitoso: "  + usuario + " via " + metodo);
+                System.out.println("[AUTH] Acceso concedido: " + usuario);
+            } else {
+                intentosFallidos.put(usuario, intentos + 1);
+                log.escribir("WARN",  "Login fallido: "  + usuario + " via " + metodo
+                        + " (intento " + (intentos + 1) + "/" + maxIntentos + ")");
+                System.out.println("[AUTH] Acceso denegado: " + usuario);
+            }
+
+            return exito;
+        }
+
+        // --- Verificación de permisos mezclada en el mismo servicio ---
+
+        boolean tienePermiso(String usuario, String recurso) {
+            // Lógica hardcodeada — para agregar roles hay que modificar este método
+            if (recurso.equals("REPORTE_VENTAS")) {
+                return usuario.equals("admin");
+            } else if (recurso.equals("VER_EMPLEADOS")) {
+                return usuario.equals("admin") || usuario.equals("laura");
+            } else if (recurso.equals("EDITAR_PERFIL")) {
+                return true;
+            }
+            return false;
+        }
+    }
+
+    // --- Infraestructura concreta instanciada dentro del servicio ---
+
+    static class EmailDirecto {
+        void enviar(String destino, String asunto, String cuerpo) {
+            System.out.println("[EMAIL] Para: " + destino);
+            System.out.println("[EMAIL] Asunto: " + asunto);
+            System.out.println("[EMAIL] Cuerpo: " + cuerpo);
+        }
+    }
+
+    static class ArchivoLog {
+        void escribir(String nivel, String mensaje) {
+            System.out.println("[LOG/" + nivel + "] " + mensaje);
+        }
+    }
+
+    public static void main(String[] args) {
+        ServicioAutenticacion auth = new ServicioAutenticacion();
+
+        System.out.println("=== Login LOCAL ===");
+        auth.autenticar("admin",  "1234", "LOCAL");
+        auth.autenticar("laura",  "xxxx", "LOCAL");
+        auth.autenticar("laura",  "xxxx", "LOCAL");
+        auth.autenticar("laura",  "xxxx", "LOCAL"); // bloqueo + email — el 4to intento activa el bloqueo
+        auth.autenticar("laura",  "abcd", "LOCAL"); // incluso con password correcta sigue bloqueada
+
+        System.out.println("\\n=== Login TOKEN ===");
+        auth.autenticar("carlos", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.payload", "TOKEN");
+
+        System.out.println("\\n=== Verificacion de permisos ===");
+        System.out.println("admin  -> REPORTE_VENTAS : " + auth.tienePermiso("admin",  "REPORTE_VENTAS"));
+        System.out.println("laura  -> REPORTE_VENTAS : " + auth.tienePermiso("laura",  "REPORTE_VENTAS"));
+        System.out.println("laura  -> VER_EMPLEADOS  : " + auth.tienePermiso("laura",  "VER_EMPLEADOS"));
+        System.out.println("carlos -> EDITAR_PERFIL  : " + auth.tienePermiso("carlos", "EDITAR_PERFIL"));
+    }
+}
+`;
+
+
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+const KEYWORDS = new Set([
+  'public','private','protected','static','class','interface',
+  'void','int','double','boolean','return','new','if','else',
+  'for','throw','throws','this','extends','implements','import',
+  'null','true','false','try','catch','super','final','abstract',
+  'instanceof'
+]);
+
+const TYPES = new Set([
+  'String','Math','System','Integer','List','Map','ArrayList',
+  'HashMap','StringBuilder','Object','Exception','RuntimeException',
+  'UnsupportedOperationException','IllegalStateException',
+  'IllegalArgumentException','NullPointerException'
+]);
+
+function highlightToken(tok) {
+  if (KEYWORDS.has(tok)) return `<span class="kw">${tok}</span>`;
+  if (TYPES.has(tok))    return `<span class="cl">${tok}</span>`;
+  return tok;
+}
+
+function highlightLine(line) {
+  // 1. Split off trailing // comment
+  let commentPart = '';
+  let codePart = line;
+
+  // Find // not inside a string — simple heuristic: find first // not preceded by odd number of quotes
+  let inStr = false;
+  let commentIdx = -1;
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === '"' && (i === 0 || line[i-1] !== '\\')) inStr = !inStr;
+    if (!inStr && line[i] === '/' && i+1 < line.length && line[i+1] === '/') {
+      commentIdx = i;
+      break;
+    }
+  }
+  if (commentIdx >= 0) {
+    codePart    = line.substring(0, commentIdx);
+    commentPart = line.substring(commentIdx);
+  }
+
+  // 2. Tokenize codePart: split by string literals, then by word boundaries
+  let result = '';
+  // Split on string literals "..."
+  const strRegex = /("(?:[^"\\]|\\.)*")/g;
+  let lastIdx = 0;
+  let m;
+  while ((m = strRegex.exec(codePart)) !== null) {
+    // process non-string chunk before this match
+    result += tokenizeCode(codePart.slice(lastIdx, m.index));
+    result += `<span class="st">${escHtml(m[1])}</span>`;
+    lastIdx = m.index + m[0].length;
+  }
+  result += tokenizeCode(codePart.slice(lastIdx));
+
+  // 3. Append comment
+  if (commentPart) {
+    result += `<span class="cm">${escHtml(commentPart)}</span>`;
+  }
+  return result;
+}
+
+function tokenizeCode(chunk) {
+  // Escape HTML, then highlight @annotations, keywords, types, numbers
+  let s = escHtml(chunk);
+  // @Annotation
+  s = s.replace(/(@\w+)/g, '<span class="an">$1</span>');
+  // word tokens: keywords and types
+  s = s.replace(/\b([A-Za-z_]\w*)\b/g, (_, w) => {
+    if (KEYWORDS.has(w)) return `<span class="kw">${w}</span>`;
+    if (TYPES.has(w))    return `<span class="cl">${w}</span>`;
+    return w;
+  });
+  // numbers (after word replacement to avoid touching already-wrapped)
+  s = s.replace(/(?<!["\w])(\d+(?:\.\d+)?)(?![\w"])/g, '<span class="nm">$1</span>');
+  return s;
+}
+
+function highlight(code) {
+  return code.split('\n').map(highlightLine).join('\n');
+}
+
+
+function renderAll() {
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById('c' + i).innerHTML = highlight(codes[i]);
+  }
+}
+
+let cur = 1;
+function show(n) {
+  document.getElementById('ex'+cur).classList.remove('visible');
+  document.getElementById('ex'+n).classList.add('visible');
+  document.querySelectorAll('.nav-item').forEach((el,i)=>el.classList.toggle('active',i===n-1));
+  cur = n;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function cp(btn, n) {
+  navigator.clipboard.writeText(codes[n]).then(()=>{
+    btn.textContent='Copiado ✓'; btn.classList.add('ok');
+    setTimeout(()=>{btn.textContent='Copiar';btn.classList.remove('ok');},1800);
+  });
+}
+
+renderAll();
+</script>
+</body>
+</html>
